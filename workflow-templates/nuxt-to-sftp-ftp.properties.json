@@ -1,0 +1,11 @@
+{
+    "name": "Nuxt App SFTP / FTP Upload Workflow",
+    "description": "",
+    "iconName": "upload",
+    "categories": [
+        "SFTP", "FTP", "Upload", "Nuxt"
+    ],
+    "filePatterns": [
+        "nuxt.config.ts$"
+    ]
+}
