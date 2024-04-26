@@ -1,6 +1,6 @@
 {
     "name": "Nuxt App SFTP / FTP Upload Workflow",
-    "description": "",
+    "description": "Nuxt App SFTP / FTP Upload Workflow",
     "iconName": "upload",
     "categories": [
         "SFTP", "FTP", "Upload", "Nuxt"
