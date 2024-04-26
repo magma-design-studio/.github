@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14' 
+          node-version: '14' # Passen Sie die Version an Ihre Nuxt.js-Kompatibilität an.
 
       - name: Install dependencies
         run: npm install
@@ -24,8 +24,13 @@ jobs:
       - name: Build Nuxt.js project
         run: npm run build
 
-      - name: Deploy to Production
-        if: github.ref == 'refs/heads/main' && (secrets.PROD_SFTP != '' || secrets.PROD_HOST != '')
+      - name: Check Deployment Conditions and Deploy to Production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if [ -z "${{ secrets.PROD_PATH }}" ] && [ -z "${{ secrets.PROD_PASSWORD }}" ] && [ -z "${{ secrets.PROD_USER }}" ] && [ -z "${{ secrets.PROD_HOST }}" ]; then
+            echo "Error: Any of PROD_HOST, PROD_USER, PROD_PASSWORD, PROD_PATH is not defined for production deployment."
+            exit 1
+          fi
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
         with:
           server: ${{ secrets.PROD_SFTP || secrets.PROD_HOST }}
@@ -33,13 +38,18 @@ jobs:
           password: ${{ secrets.PROD_PASSWORD }}
           protocol: ${{ secrets.PROD_SFTP && 'sftp' || 'ftp' }}
           port: ${{ secrets.PROD_SFTP && '22' || '21' }}
-          local-dir: ./dist/ # Standard-Verzeichnis für den Output von Nuxt.js
+          local-dir: ./dist/
           server-dir: ${{ secrets.PROD_PATH }}
           security: strict
           state-name: state-production.json
 
-      - name: Deploy to Staging
-        if: github.ref != 'refs/heads/main' && (secrets.STAGE_SFTP != '' || secrets.STAGE_HOST != '')
+      - name: Check Deployment Conditions and Deploy to Staging
+        if: github.ref != 'refs/heads/main'
+        run: |
+          if [ -z "${{ secrets.STAGE_PATH }}" ] && [ -z "${{ secrets.STAGE_PASSWORD }}" ] && [ -z "${{ secrets.STAGE_USER }}" ] && [ -z "${{ secrets.STAGE_HOST }}" ]; then
+            echo "Error: Any of STAGE_HOST, STAGE_USER, STAGE_PASSWORD, STAGE_PATH is not defined for staging deployment."
+            exit 1
+          fi
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
         with:
           server: ${{ secrets.STAGE_SFTP || secrets.STAGE_HOST }}
@@ -47,7 +57,7 @@ jobs:
           password: ${{ secrets.STAGE_PASSWORD }}
           protocol: ${{ secrets.STAGE_SFTP && 'sftp' || 'ftp' }}
           port: ${{ secrets.STAGE_SFTP && '22' || '21' }}
-          local-dir: ./dist/ # Standard-Verzeichnis für den Output von Nuxt.js
+          local-dir: ./dist/
           server-dir: ${{ secrets.STAGE_PATH }}
           security: strict
           state-name: state-staging.json
