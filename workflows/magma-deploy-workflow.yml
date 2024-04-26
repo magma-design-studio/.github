@@ -1,12 +1,5 @@
 name: Deploy Workflow
 
-on:
-  workflow_call:
-    inputs:
-      type:
-        required: true
-        type: string
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,8 +7,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Set up env variables
+        if: ${{ inputs.type == 'prod' }}
+        run: |
+          echo "TYPE=${{ github.ref == 'refs/heads/main' && 'prod' || 'stage' }}" >> $GITHUB_ENV
+          echo "TYPE_UPPER=$(echo ${{ inputs.type }} | awk '{print toupper($0)}')" >> $GITHUB_ENV
+
       - name: Check input type
-        if: ${{ inputs.type != 'stage' && inputs.type != 'prod' }}
+        if: ${{ env.type != 'stage' && env.type != 'prod' }}
         run: | 
           echo "no type input on magma-deploy-workflow.yml"
           exit 1
@@ -23,7 +22,6 @@ jobs:
       - name: Set up env variables
         if: ${{ inputs.type == 'prod' }}
         run: |
-          echo "TYPE_UPPER=$(echo ${{ inputs.type }} | awk '{print toupper($0)}')" >> $GITHUB_ENV
           echo "DEPLOY_HOST=${{ secrets[env.TYPE_UPPER+'_HOST'] }}" >> $GITHUB_ENV
           echo "DEPLOY_USER=${{ secrets[env.TYPE_UPPER+'_USER'] }}" >> $GITHUB_ENV
           echo "DEPLOY_PASSWORD=${{ secrets[env.TYPE_UPPER+'_PASSWORD'] }}" >> $GITHUB_ENV
